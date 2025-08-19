@@ -8,6 +8,8 @@ import lombok.Setter;
 public class CouncilSignUp {
     private String username;
     private String password;
+    private String schoolName;
+    private String college;
     private String department;
     private String email;
     private String phone;
