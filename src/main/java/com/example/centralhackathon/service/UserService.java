@@ -1,6 +1,7 @@
 package com.example.centralhackathon.service;
 
 import com.example.centralhackathon.dto.Request.*;
+import com.example.centralhackathon.dto.Response.LoginResponse;
 import com.example.centralhackathon.entity.Boss;
 import com.example.centralhackathon.entity.NormalUser;
 import com.example.centralhackathon.entity.StudentCouncil;
@@ -97,12 +98,18 @@ public class UserService {
     }
 
     @Transactional
-    public String login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         Users user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(()->new UsernameNotFoundException("존재하지 않는 유저입니다."));
         if(!encoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
         UserInfo userInfo = UserInfo.toDto(user);
-        return jwtUtil.createAccessToken(userInfo);
+        String token = jwtUtil.createAccessToken(userInfo); // 토큰 문자열
+
+        LoginResponse res = new LoginResponse();
+        res.setToken(token);
+        res.setRole(user.getRole()); // ★ 여기서 하위 클래스가 돌려준 역할
+
+        return res;
     }
 }

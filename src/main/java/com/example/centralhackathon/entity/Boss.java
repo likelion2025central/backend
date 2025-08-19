@@ -13,4 +13,7 @@ public class Boss extends Users {
     @Column(unique = true)
     private String bizRegNo;
     private String phone;
+
+    @Override
+    public Role getRole() { return Role.BOSS; }
 }

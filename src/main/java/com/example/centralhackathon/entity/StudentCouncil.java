@@ -17,4 +17,7 @@ public class StudentCouncil extends Users {
     private String department;
     private String email;
     private String phone;
+
+    @Override
+    public Role getRole() { return Role.COUNCIL; }
 }

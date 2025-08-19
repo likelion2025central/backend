@@ -12,4 +12,7 @@ public class NormalUser extends Users {
     private String name;
     private String schoolName;
     private String major;
+
+    @Override
+    public Role getRole() { return Role.STUDENT; }
 }
