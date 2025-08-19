@@ -29,13 +29,13 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse(true, dup ? "중복 아이디" : "사용 가능", dup));
     }
 
-
+/*
     @PostMapping("/signup/normal")
     public ResponseEntity<ApiResponse> signUpNormal(@RequestBody NormalSignUp req) {
         userService.NormalSignUp(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse(true, "회원가입(학생) 완료", null));
-    }
+    }*/
 
 
     @PostMapping("/signup/council")

@@ -25,6 +25,7 @@ public class UserService {
         return userRepository.existsByUsername(userName);
     }
 
+    /*
     @Transactional
     public void NormalSignUp(NormalSignUp normal) {
         if (normal == null) {
@@ -45,7 +46,7 @@ public class UserService {
         entity.setSchoolName(normal.getSchoolName());
         entity.setMajor(normal.getMajor());
         userRepository.save(entity);
-    }
+    }*/
 
     @Transactional
     public void CouncilSignUp(CouncilSignUp council) {
@@ -65,6 +66,8 @@ public class UserService {
         entity.setUsername(council.getUsername());
         entity.setPassword(encoder.encode(council.getPassword()));
         entity.setPhone(council.getPhone());
+        entity.setCollege(council.getCollege());
+        entity.setSchoolName(council.getSchoolName());
         entity.setDepartment(council.getDepartment());
         entity.setEmail(council.getEmail());
         userRepository.save(entity);

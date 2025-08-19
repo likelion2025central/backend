@@ -12,6 +12,8 @@ import lombok.Setter;
 @Table(name = "student_council")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class StudentCouncil extends Users {
+    private String schoolName;
+    private String college;
     private String department;
     private String email;
     private String phone;
