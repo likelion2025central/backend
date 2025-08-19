@@ -9,6 +9,7 @@ public class CouncilAssociationResponse {
     private Long id;
     private String industry;
     private String boon;
+    private Integer num;
     private String period;
     private String targetSchool;
     private String targetCollege;

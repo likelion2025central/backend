@@ -17,6 +17,7 @@ public class CouncilAssociation extends BaseTimeEntity{
     private String industry;
     private String boon;
     private String period;
+    private Integer num;
     private String targetSchool;
     private String targetCollege;
     private String targetDepartment;
