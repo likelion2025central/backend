@@ -35,7 +35,8 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/webjars/**",
             "/swagger-ui/index.html",
-            "/users/**"
+            "/users/**",
+            "/email/**"
     }; //더 열어둘 엔드포인트 여기에 추가
 
     @Bean
