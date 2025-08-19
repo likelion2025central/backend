@@ -1,5 +1,6 @@
 package com.example.centralhackathon.repository;
 
+import com.example.centralhackathon.entity.StudentCouncil;
 import com.example.centralhackathon.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
