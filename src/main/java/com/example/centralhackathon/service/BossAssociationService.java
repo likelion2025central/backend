@@ -1,12 +1,16 @@
 package com.example.centralhackathon.service;
 import com.example.centralhackathon.dto.Request.BossAssociationRequest;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
+import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
 import com.example.centralhackathon.entity.BossAssociation;
+import com.example.centralhackathon.entity.CouncilAssociation;
 import com.example.centralhackathon.entity.Users;
 import com.example.centralhackathon.repository.BossAssociationRepository;
 import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,5 +64,25 @@ public class BossAssociationService {
         dto.setSignificant(e.getSignificant());
         dto.setImgUrl(e.getImgUrl());
         return dto;
+    }
+
+    public Page<BossAssociationResponse> getBossAssociations(String username, Pageable pageable) {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found. username=" + username));
+
+        Page<BossAssociation> page = bossAssociationRepository.findByUserId(user.getId(), pageable);
+
+        return page.map(entity -> {
+            BossAssociationResponse dto = new BossAssociationResponse();
+            dto.setId(entity.getId());
+            dto.setIndustry(entity.getIndustry());
+            dto.setBoon(entity.getBoon());
+            dto.setNum(entity.getNum());
+            dto.setPeriod(entity.getPeriod());
+            dto.setTargetSchool(entity.getTargetSchool());
+            dto.setSignificant(entity.getSignificant());
+            dto.setImgUrl(entity.getImgUrl());
+            return dto;
+        });
     }
 }

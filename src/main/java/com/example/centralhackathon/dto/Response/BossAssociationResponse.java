@@ -13,5 +13,5 @@ public class BossAssociationResponse {
     private Integer num;
     private String targetSchool;
     private String significant;
-    private String imgUrl; // 단일 이미지 URL
+    private String imgUrl;
 }
