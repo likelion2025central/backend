@@ -1,5 +1,7 @@
 package com.example.centralhackathon.service;
 import com.example.centralhackathon.dto.Request.BossAssociationRequest;
+import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
+import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
 import com.example.centralhackathon.entity.BossAssociation;
@@ -85,4 +87,34 @@ public class BossAssociationService {
             return dto;
         });
     }
+    @Transactional
+    public BossAssociationResponse updateAssociation(Long associationId,
+                                                     BossAssociationUpdateRequest req,
+                                                     String username) throws IOException {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found. username=" + username));
+
+        BossAssociation entity = bossAssociationRepository.findById(associationId)
+                .orElseThrow(() -> new EntityNotFoundException("Association not found. id=" + associationId));
+
+        if (!entity.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("본인이 등록한 제휴만 수정할 수 있습니다.");
+        }
+
+        // 필드 업데이트
+        entity.setIndustry(req.getIndustry());
+        entity.setBoon(req.getBoon());
+        entity.setNum(req.getNum());
+        entity.setPeriod(req.getPeriod());
+        entity.setTargetSchool(req.getTargetSchool());
+        entity.setSignificant(req.getSignificant());
+
+        if (req.getImage() != null && !req.getImage().isEmpty()) {
+            String newUrl = s3Service.upload(req.getImage(), "boss-association");
+            entity.setImgUrl(newUrl);
+        }
+
+        return toResponse(entity);
+    }
+
 }
