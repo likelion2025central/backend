@@ -6,6 +6,7 @@ import com.example.centralhackathon.dto.Request.BossSignUp;
 import com.example.centralhackathon.dto.Request.CouncilSignUp;
 import com.example.centralhackathon.dto.Request.LoginRequest;
 import com.example.centralhackathon.dto.Request.NormalSignUp;
+import com.example.centralhackathon.dto.Response.LoginResponse;
 import com.example.centralhackathon.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -57,8 +58,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest req) {
         try {
-            String token = userService.login(req);
-            return ResponseEntity.ok(new ApiResponse(true, "로그인 성공", token));
+            LoginResponse res = userService.login(req);
+            return ResponseEntity.ok(new ApiResponse(true, "로그인 성공", res));
         } catch (UsernameNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(false, ex.getMessage(), null));

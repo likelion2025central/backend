@@ -13,10 +13,11 @@ import lombok.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "role", length = 20) // 'STUDENT','COUNCIL','BOSS'
 public abstract class Users extends BaseTimeEntity {
-
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
     @Column(nullable = false)
     private String password;
+
+    public abstract Role getRole();
 }

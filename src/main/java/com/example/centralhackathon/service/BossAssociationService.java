@@ -1,0 +1,120 @@
+package com.example.centralhackathon.service;
+import com.example.centralhackathon.dto.Request.BossAssociationRequest;
+import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
+import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
+import com.example.centralhackathon.dto.Response.BossAssociationResponse;
+import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
+import com.example.centralhackathon.entity.BossAssociation;
+import com.example.centralhackathon.entity.CouncilAssociation;
+import com.example.centralhackathon.entity.Users;
+import com.example.centralhackathon.repository.BossAssociationRepository;
+import com.example.centralhackathon.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
+@Service
+@RequiredArgsConstructor
+public class BossAssociationService {
+
+    private final BossAssociationRepository bossAssociationRepository;
+    private final UserRepository userRepository;
+    private final S3Service s3Service;
+
+    @Transactional
+    public BossAssociationResponse register(String username,
+                                            BossAssociationRequest req,
+                                            MultipartFile image) throws IOException {
+
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found. username=" + username));
+
+        BossAssociation assoc = new BossAssociation();
+        assoc.setUser(user);
+        assoc.setIndustry(req.getIndustry());
+        assoc.setBoon(req.getBoon());
+        assoc.setPeriod(req.getPeriod());
+        assoc.setNum(req.getNum());
+        assoc.setTargetSchool(req.getTargetSchool());
+        assoc.setSignificant(req.getSignificant());
+
+        // 이미지(선택) 업로드
+        if (image != null && !image.isEmpty()) {
+            System.out.println(image.getOriginalFilename());
+            String url = s3Service.upload(image, "boss-associations");
+            assoc.setImgUrl(url);
+        }
+
+        bossAssociationRepository.save(assoc);
+        return toResponse(assoc);
+    }
+
+    private BossAssociationResponse toResponse(BossAssociation e) {
+        BossAssociationResponse dto = new BossAssociationResponse();
+        dto.setId(e.getId());
+        dto.setIndustry(e.getIndustry());
+        dto.setBoon(e.getBoon());
+        dto.setPeriod(e.getPeriod());
+        dto.setNum(e.getNum());
+        dto.setTargetSchool(e.getTargetSchool());
+        dto.setSignificant(e.getSignificant());
+        dto.setImgUrl(e.getImgUrl());
+        return dto;
+    }
+
+    public Page<BossAssociationResponse> getBossAssociations(String username, Pageable pageable) {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found. username=" + username));
+
+        Page<BossAssociation> page = bossAssociationRepository.findByUserId(user.getId(), pageable);
+
+        return page.map(entity -> {
+            BossAssociationResponse dto = new BossAssociationResponse();
+            dto.setId(entity.getId());
+            dto.setIndustry(entity.getIndustry());
+            dto.setBoon(entity.getBoon());
+            dto.setNum(entity.getNum());
+            dto.setPeriod(entity.getPeriod());
+            dto.setTargetSchool(entity.getTargetSchool());
+            dto.setSignificant(entity.getSignificant());
+            dto.setImgUrl(entity.getImgUrl());
+            return dto;
+        });
+    }
+    @Transactional
+    public BossAssociationResponse updateAssociation(Long associationId,
+                                                     BossAssociationUpdateRequest req,
+                                                     String username) throws IOException {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found. username=" + username));
+
+        BossAssociation entity = bossAssociationRepository.findById(associationId)
+                .orElseThrow(() -> new EntityNotFoundException("Association not found. id=" + associationId));
+
+        if (!entity.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("본인이 등록한 제휴만 수정할 수 있습니다.");
+        }
+
+        // 필드 업데이트
+        entity.setIndustry(req.getIndustry());
+        entity.setBoon(req.getBoon());
+        entity.setNum(req.getNum());
+        entity.setPeriod(req.getPeriod());
+        entity.setTargetSchool(req.getTargetSchool());
+        entity.setSignificant(req.getSignificant());
+
+        if (req.getImage() != null && !req.getImage().isEmpty()) {
+            String newUrl = s3Service.upload(req.getImage(), "boss-association");
+            entity.setImgUrl(newUrl);
+        }
+
+        return toResponse(entity);
+    }
+
+}

@@ -39,6 +39,7 @@ public class JwtUtil {
     private String createToken(UserInfo userInfo, long expireTime) {
         Claims claims = Jwts.claims();
         claims.put("userName", userInfo.getUsername());
+        claims.put("id", userInfo.getId());
 
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime tokenValidity = now.plusSeconds(expireTime);
