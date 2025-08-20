@@ -40,6 +40,7 @@ public class BossAssociationService {
 
         // 이미지(선택) 업로드
         if (image != null && !image.isEmpty()) {
+            System.out.println(image.getOriginalFilename());
             String url = s3Service.upload(image, "boss-associations");
             assoc.setImgUrl(url);
         }

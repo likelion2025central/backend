@@ -2,8 +2,10 @@
 package com.example.centralhackathon.dto.Request;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.springframework.web.multipart.MultipartFile;
+@NoArgsConstructor
 @Getter @Setter
 public class BossAssociationRequest {
     private String industry;
@@ -12,4 +14,5 @@ public class BossAssociationRequest {
     private Integer num;
     private String targetSchool;
     private String significant;
+    private MultipartFile image;
 }

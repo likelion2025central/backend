@@ -63,20 +63,18 @@ public class S3Service {
     }
 
     private File convert(MultipartFile file) throws IOException {
-        File convertFile = new File(file.getOriginalFilename());
-        if (convertFile.createNewFile()) {
-            try (FileOutputStream fos = new FileOutputStream(convertFile)) {
-                fos.write(file.getBytes());
-            }
-            return convertFile;
+        // system temp dir에 임시파일 생성
+        File convertFile = File.createTempFile("upload-", "-" + file.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convertFile)) {
+            fos.write(file.getBytes());
         }
-        throw new IllegalArgumentException("파일 변환에 실패했습니다: " + file.getOriginalFilename());
+        return convertFile;
     }
+
 
     private String putS3(File uploadFile, String fileName) {
         s3Client.putObject(
-                new PutObjectRequest(bucketName, fileName, uploadFile)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                new PutObjectRequest(bucketName, fileName, uploadFile));
         return s3Client.getUrl(bucketName, fileName).toString();
     }
 
