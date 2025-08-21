@@ -5,10 +5,13 @@ import com.example.centralhackathon.dto.Request.BossSignUp;
 import com.example.centralhackathon.dto.Request.CouncilAssociationRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.PagePayload;
+import com.example.centralhackathon.dto.Response.BossAssociationResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
+import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
 import com.example.centralhackathon.service.CouncilService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -69,6 +72,26 @@ public class CouncilController {
                 councilService.updateAssociation(associationId, req, userDetails.getUsername());
 
         return ResponseEntity.ok(new ApiResponse(true, "희망 제휴 수정 완료", updated));
+    }
+
+    @GetMapping("/received/waiting")
+    public ResponseEntity<Page<CouncilRequestManageResponse>> getReceivedWaiting(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<CouncilRequestManageResponse> result =
+                councilService.getWaitingBossRequestsForCouncil(username, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/sent/waiting")
+    public ResponseEntity<Page<CouncilRequestManageResponse>> getSendWaiting(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<CouncilRequestManageResponse> result =
+                councilService.getWaitingCouncilRequestsForBoss(username, pageable);
+        return ResponseEntity.ok(result);
     }
 
 }

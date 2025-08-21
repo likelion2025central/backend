@@ -3,14 +3,16 @@ import com.example.centralhackathon.dto.Request.BossAssociationRequest;
 import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
+import com.example.centralhackathon.dto.Response.BossRequestManageResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
-import com.example.centralhackathon.entity.BossAssociation;
-import com.example.centralhackathon.entity.CouncilAssociation;
-import com.example.centralhackathon.entity.Users;
+import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
+import com.example.centralhackathon.entity.*;
+import com.example.centralhackathon.repository.AssociationRepository;
 import com.example.centralhackathon.repository.BossAssociationRepository;
 import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class BossAssociationService {
     private final BossAssociationRepository bossAssociationRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final AssociationRepository associationRepository;
 
     @Transactional
     public BossAssociationResponse register(String username,
@@ -115,6 +118,52 @@ public class BossAssociationService {
         }
 
         return toResponse(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getWaitingCouncilRequestsForBoss(
+            String username, Pageable pageable
+    ) {
+        Page<CouncilAssociation>  page = associationRepository
+                .findCouncilAssociationsByBossUsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
+
+        return page.map(BossAssociationService::toCouncilResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getWaitingBossRequestsForCouncil(
+            String username, Pageable pageable
+    ) {
+        Page<CouncilAssociation> page = associationRepository
+                .findCouncilAssociationsByBossUsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.COUNCIL,pageable);
+
+        return page.map(BossAssociationService::toCouncilResponse);
+    }
+
+    private static BossRequestManageResponse toCouncilResponse(CouncilAssociation c) {
+        Users user = c.getUser();
+        // 2) 보스 전용 필드 필요하면 언프로시 후 캐스팅
+        StudentCouncil sc = unproxy(user, StudentCouncil.class);
+        BossRequestManageResponse dto = new BossRequestManageResponse();
+        dto.setSchoolName(sc.getSchoolName());
+        dto.setCollege(sc.getCollege());
+        dto.setDepartment(sc.getDepartment());
+        dto.setId(c.getId());
+        dto.setIndustry(c.getIndustry());
+        dto.setBoon(c.getBoon());
+        dto.setPeriod(c.getPeriod());
+        dto.setNum(c.getNum());
+        dto.setSignificant(c.getSignificant());
+        return dto;
+    }
+    @SuppressWarnings("unchecked")
+    private static <T> T unproxy(Object entity, Class<T> targetType) {
+        Object impl = (entity instanceof HibernateProxy)
+                ? ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation()
+                : entity;
+        return (T) impl; // 실제 구현체로 반환
     }
 
 }

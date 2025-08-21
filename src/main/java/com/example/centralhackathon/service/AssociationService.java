@@ -5,7 +5,6 @@ import com.example.centralhackathon.entity.*;
 import com.example.centralhackathon.repository.AssociationRepository;
 import com.example.centralhackathon.repository.BossAssociationRepository;
 import com.example.centralhackathon.repository.CouncilAssociationRepository;
-import com.example.centralhackathon.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.stereotype.Service;
@@ -21,8 +20,6 @@ public class AssociationService {
     private final CouncilAssociationRepository councilAssociationRepository;
     private final BossAssociationRepository bossAssociationRepository;
     private final EmailCertificationUtil emailUtil;
-    private final UserRepository userRepository;
-    private final MailSendService mailSendService;
 
     @Transactional
     public int makeAssociation(List<Long> ids, Role requesterType, Long requesterId) throws MessagingException {

@@ -6,10 +6,13 @@ import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.PagePayload;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
+import com.example.centralhackathon.dto.Response.BossRequestManageResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
+import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
 import com.example.centralhackathon.service.BossAssociationService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -76,5 +79,24 @@ public class BossAssociationController {
                 bossAssociationService.updateAssociation(associationId, req, userDetails.getUsername());
 
         return ResponseEntity.ok(new ApiResponse(true, "희망 제휴 수정 완료", updated));
+    }
+    @GetMapping("/received/waiting")
+    public ResponseEntity<Page<BossRequestManageResponse>> getReceivedWaiting(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<BossRequestManageResponse> result =
+                bossAssociationService.getWaitingCouncilRequestsForBoss(username, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/sent/waiting")
+    public ResponseEntity<Page<BossRequestManageResponse>> getSendWaiting(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<BossRequestManageResponse> result =
+                bossAssociationService.getWaitingBossRequestsForCouncil(username, pageable);
+        return ResponseEntity.ok(result);
     }
 }
