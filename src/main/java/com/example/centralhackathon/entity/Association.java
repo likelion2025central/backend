@@ -18,9 +18,13 @@ public class Association extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "boss_assoc_id")
-    private CouncilAssociation boss;
-    private Integer stage;
+    private BossAssociation boss;
+
     private Role requester;
     private Role responder;
-    private Integer condition; // 0->요청대기 1->협의중 2-> 제휴 확정 3->반려
+    /**
+     * WAITING(요청대기), NEGOTIATING(협의중), CONFIRMED(제휴 확정), REJECTED(반려)
+     */
+    @Enumerated(EnumType.STRING)
+    private AssociationCondition status;
 }
