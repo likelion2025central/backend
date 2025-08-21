@@ -5,8 +5,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CouncilRequestManageResponse {
+    private Long associationId;
     private String storeName;
-    private Long id;
+    private Long bossAssocId;
     private String industry;
     private String boon;
     private String period;

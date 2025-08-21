@@ -105,31 +105,38 @@ public class CouncilService {
     public Page<CouncilRequestManageResponse> getWaitingBossRequestsForCouncil(
             String username, Pageable pageable
     ) {
-        Page<BossAssociation> page = associationRepository
-                .findBossAssociationsByCouncilUsernameAndStatusAndResponder(
+        Page<Association> page = associationRepository
+                .findByCouncil_User_UsernameAndStatusAndResponder(
                         username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
 
-        return page.map(CouncilService::toBossResponse);
+        return page.map(CouncilService::toCouncilReceivedBossDto);
     }
 
     @Transactional(readOnly = true)
     public Page<CouncilRequestManageResponse> getWaitingCouncilRequestsForBoss(
             String username, Pageable pageable
     ) {
-        Page<BossAssociation> page = associationRepository
-                .findBossAssociationsByCouncilUsernameAndStatusAndResponder(
-                        username, AssociationCondition.WAITING, Role.BOSS,pageable);
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
 
-        return page.map(CouncilService::toBossResponse);
+        // 사장이 받은 ‘학생회 요청’이라면 Boss 관점 DTO/필드를 원하면 별도 매퍼를 만들자.
+        // 여기선 일단 boss와 동일 형태로 예시(원하면 council 정보로 바꿔줄게).
+        return page.map(CouncilService::toCouncilReceivedBossDto);
     }
 
-    private static CouncilRequestManageResponse toBossResponse(BossAssociation b) {
+    private static CouncilRequestManageResponse toCouncilReceivedBossDto(Association a) {
+        // Association → BossAssociation
+        BossAssociation b = a.getBoss();
+
+        // Boss 전용 필드 접근 (프록시 안전 캐스팅)
         Users user = b.getUser();
-        // 2) 보스 전용 필드 필요하면 언프로시 후 캐스팅
         Boss bo = unproxy(user, Boss.class);
+
         CouncilRequestManageResponse dto = new CouncilRequestManageResponse();
-        dto.setStoreName(bo.getStoreName());
-        dto.setId(b.getId());
+        dto.setAssociationId(a.getId());          // ★ Association PK
+        dto.setBossAssocId(b.getId());                     // BossAssociation ID
+        dto.setStoreName(bo.getStoreName());      // Boss 전용
         dto.setIndustry(b.getIndustry());
         dto.setBoon(b.getBoon());
         dto.setPeriod(b.getPeriod());
@@ -139,11 +146,12 @@ public class CouncilService {
         dto.setImgUrl(b.getImgUrl());
         return dto;
     }
+
     @SuppressWarnings("unchecked")
     private static <T> T unproxy(Object entity, Class<T> targetType) {
         Object impl = (entity instanceof HibernateProxy)
                 ? ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation()
                 : entity;
-        return (T) impl; // 실제 구현체로 반환
-    }
+        return (T) impl;
+}
 }

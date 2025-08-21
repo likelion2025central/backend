@@ -6,10 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BossRequestManageResponse {
+    private Long associationId;
     private String schoolName;
     private String college;
     private String department;
-    private Long id;
+    private Long councilAssocId;
     private String industry;
     private String boon;
     private Integer num;

@@ -124,33 +124,39 @@ public class BossAssociationService {
     public Page<BossRequestManageResponse> getWaitingCouncilRequestsForBoss(
             String username, Pageable pageable
     ) {
-        Page<CouncilAssociation>  page = associationRepository
-                .findCouncilAssociationsByBossUsernameAndStatusAndResponder(
+        // 사장이 받은 '대기중' 요청 → responder = BOSS
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
                         username, AssociationCondition.WAITING, Role.BOSS, pageable);
 
-        return page.map(BossAssociationService::toCouncilResponse);
+        return page.map(BossAssociationService::toBossReceivedFromCouncilDto);
     }
 
     @Transactional(readOnly = true)
     public Page<BossRequestManageResponse> getWaitingBossRequestsForCouncil(
             String username, Pageable pageable
     ) {
-        Page<CouncilAssociation> page = associationRepository
-                .findCouncilAssociationsByBossUsernameAndStatusAndResponder(
-                        username, AssociationCondition.WAITING, Role.COUNCIL,pageable);
+        // 사장이 보낸 '대기중' 요청 → responder = COUNCIL
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
 
-        return page.map(BossAssociationService::toCouncilResponse);
+        return page.map(BossAssociationService::toBossSentToCouncilDto);
     }
 
-    private static BossRequestManageResponse toCouncilResponse(CouncilAssociation c) {
-        Users user = c.getUser();
-        // 2) 보스 전용 필드 필요하면 언프로시 후 캐스팅
-        StudentCouncil sc = unproxy(user, StudentCouncil.class);
+    // 공용 매퍼: Association → CouncilAssociation 중심으로 DTO 생성
+    private static BossRequestManageResponse toBossReceivedFromCouncilDto(Association a) {
+        CouncilAssociation c = a.getCouncil();
+        Users u = c.getUser();
+        // StudentCouncil 전용 필드 접근 (필요 시만 언프로시)
+        StudentCouncil sc = unproxy(u, StudentCouncil.class);
+
         BossRequestManageResponse dto = new BossRequestManageResponse();
+        dto.setAssociationId(a.getId());    // ★ Association PK
+        dto.setCouncilAssocId(c.getId());               // CouncilAssociation ID
         dto.setSchoolName(sc.getSchoolName());
         dto.setCollege(sc.getCollege());
         dto.setDepartment(sc.getDepartment());
-        dto.setId(c.getId());
         dto.setIndustry(c.getIndustry());
         dto.setBoon(c.getBoon());
         dto.setPeriod(c.getPeriod());
@@ -158,12 +164,16 @@ public class BossAssociationService {
         dto.setSignificant(c.getSignificant());
         return dto;
     }
+
+    // 보낸/받은이 동일 포맷이면 위 매퍼 재사용 가능. 분리해두면 커스터마이징이 쉬움.
+    private static BossRequestManageResponse toBossSentToCouncilDto(Association a) {
+        return toBossReceivedFromCouncilDto(a);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> T unproxy(Object entity, Class<T> targetType) {
         Object impl = (entity instanceof HibernateProxy)
                 ? ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation()
                 : entity;
-        return (T) impl; // 실제 구현체로 반환
-    }
-
-}
+        return (T) impl;
+    }}
