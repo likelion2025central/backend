@@ -25,4 +25,7 @@ public class AssociationPaper {
     private String targetSchool;
     private String targetCollege;
     private String targetDepartment;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role requester;
 }

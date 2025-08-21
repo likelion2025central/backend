@@ -26,5 +26,6 @@ public class Association extends BaseTimeEntity {
      * WAITING(요청대기), NEGOTIATING(협의중), CONFIRMED(제휴 확정), REJECTED(반려)
      */
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 32)
     private AssociationCondition status;
 }
