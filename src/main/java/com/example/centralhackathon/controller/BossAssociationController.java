@@ -108,18 +108,28 @@ public class BossAssociationController {
         return ResponseEntity.ok(result);
     }
     @Operation(
-            summary = "협의중 / 제휴 확정 볼 수 있는거",
-            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다" +
-                    "그리고 선택지는 NEGOTIATING이 협의중, CONFIRMED가 제휴 확정입니다 나머지는 안쓰는 필드니까 신경 X"
-    )
-    @GetMapping("/requests")
-    public ResponseEntity<Page<BossRequestManageResponse>> getBossRequests(
+            summary = "사장님 측에서 협의중 볼 수 있는거",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다")
+    @GetMapping("/requests/negotiating")
+    public ResponseEntity<Page<BossRequestManageResponse>> getBossNegotiatingRequests(
             @AuthenticationPrincipal(expression = "username") String username,
-            @RequestParam(name = "status") AssociationCondition status,
             @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<BossRequestManageResponse> result =
-                bossAssociationService.getCouncilAssociationsByStatusForBoss(username, status, pageable);
+                bossAssociationService.getCouncilAssociationsByStatusForBoss(username, AssociationCondition.NEGOTIATING, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(
+            summary = "사장님 측에서 확정 볼 수 있는거",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다")
+    @GetMapping("/requests/confirmed")
+    public ResponseEntity<Page<BossRequestManageResponse>> getBossConfirmedRequests(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<BossRequestManageResponse> result =
+                bossAssociationService.getCouncilAssociationsByStatusForBoss(username, AssociationCondition.CONFIRMED, pageable);
         return ResponseEntity.ok(result);
     }
 }

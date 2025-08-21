@@ -105,18 +105,28 @@ public class CouncilController {
         return ResponseEntity.ok(result);
     }
     @Operation(
-            summary = "협의중 / 제휴 확정 볼 수 있는거",
-            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다" +
-                    "그리고 선택지는 NEGOTIATING이 협의중, CONFIRMED가 제휴 확정입니다 나머지는 안쓰는 필드니까 신경 X"
-    )
-    @GetMapping("/requests")
-    public ResponseEntity<Page<CouncilRequestManageResponse>> getCouncilRequests(
+            summary = "학생회 측에서  제휴 협상중 볼 수 있는거",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다" )
+    @GetMapping("/requests/negotiating")
+    public ResponseEntity<Page<CouncilRequestManageResponse>> getCouncilNegotiatingRequests(
             @AuthenticationPrincipal(expression = "username") String username,
-            @RequestParam(name = "status", required = false) AssociationCondition status,
             @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<CouncilRequestManageResponse> result =
-                councilService.getCouncilAssociationsByStatuses(username, status, pageable);
+                councilService.getCouncilAssociationsByStatuses(username, AssociationCondition.NEGOTIATING, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(
+            summary = "학생회 측에서 제휴 확정 볼 수 있는거",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다" )
+    @GetMapping("/requests/confirmed")
+    public ResponseEntity<Page<CouncilRequestManageResponse>> getCouncilConfirmedRequests(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<CouncilRequestManageResponse> result =
+                councilService.getCouncilAssociationsByStatuses(username, AssociationCondition.CONFIRMED, pageable);
         return ResponseEntity.ok(result);
     }
 
