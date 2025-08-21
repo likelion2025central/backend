@@ -3,14 +3,16 @@ import com.example.centralhackathon.dto.Request.BossAssociationRequest;
 import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
+import com.example.centralhackathon.dto.Response.BossRequestManageResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
-import com.example.centralhackathon.entity.BossAssociation;
-import com.example.centralhackathon.entity.CouncilAssociation;
-import com.example.centralhackathon.entity.Users;
+import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
+import com.example.centralhackathon.entity.*;
+import com.example.centralhackathon.repository.AssociationRepository;
 import com.example.centralhackathon.repository.BossAssociationRepository;
 import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class BossAssociationService {
     private final BossAssociationRepository bossAssociationRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final AssociationRepository associationRepository;
 
     @Transactional
     public BossAssociationResponse register(String username,
@@ -117,4 +120,73 @@ public class BossAssociationService {
         return toResponse(entity);
     }
 
-}
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getWaitingCouncilRequestsForBoss(
+            String username, Pageable pageable
+    ) {
+        // 사장이 받은 '대기중' 요청 → responder = BOSS
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
+
+        return page.map(BossAssociationService::toBossReceivedFromCouncilDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getWaitingBossRequestsForCouncil(
+            String username, Pageable pageable
+    ) {
+        // 사장이 보낸 '대기중' 요청 → responder = COUNCIL
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
+
+        return page.map(BossAssociationService::toBossSentToCouncilDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getCouncilAssociationsByStatusForBoss(
+            String username,
+            AssociationCondition status,
+            Pageable pageable
+    ) {
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatus(username, status, pageable);
+
+        return page.map(BossAssociationService::toBossSentToCouncilDto);
+    }
+
+    // 공용 매퍼: Association → CouncilAssociation 중심으로 DTO 생성
+    private static BossRequestManageResponse toBossReceivedFromCouncilDto(Association a) {
+        CouncilAssociation c = a.getCouncil();
+        Users u = c.getUser();
+        // StudentCouncil 전용 필드 접근 (필요 시만 언프로시)
+        StudentCouncil sc = unproxy(u, StudentCouncil.class);
+
+        BossRequestManageResponse dto = new BossRequestManageResponse();
+        dto.setAssociationId(a.getId());    // ★ Association PK
+        dto.setCouncilAssocId(c.getId());               // CouncilAssociation ID
+        dto.setSchoolName(sc.getSchoolName());
+        dto.setCollege(sc.getCollege());
+        dto.setDepartment(sc.getDepartment());
+        dto.setIndustry(c.getIndustry());
+        dto.setBoon(c.getBoon());
+        dto.setPeriod(c.getPeriod());
+        dto.setNum(c.getNum());
+        dto.setSignificant(c.getSignificant());
+        return dto;
+    }
+
+    // 보낸/받은이 동일 포맷이면 위 매퍼 재사용 가능. 분리해두면 커스터마이징이 쉬움.
+    private static BossRequestManageResponse toBossSentToCouncilDto(Association a) {
+        return toBossReceivedFromCouncilDto(a);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static <T> T unproxy(Object entity, Class<T> targetType) {
+        Object impl = (entity instanceof HibernateProxy)
+                ? ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation()
+                : entity;
+        return (T) impl;
+    }}

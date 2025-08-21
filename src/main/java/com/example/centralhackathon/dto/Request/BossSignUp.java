@@ -11,4 +11,5 @@ public class BossSignUp {
     private String storeName;
     private String bizRegNo;
     private String phone;
+    private String email;
 }

@@ -2,13 +2,16 @@ package com.example.centralhackathon.service;
 
 import com.example.centralhackathon.dto.Request.CouncilAssociationRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
+import com.example.centralhackathon.dto.Response.BossAssociationResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
-import com.example.centralhackathon.entity.CouncilAssociation;
-import com.example.centralhackathon.entity.Users;
+import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
+import com.example.centralhackathon.entity.*;
+import com.example.centralhackathon.repository.AssociationRepository;
 import com.example.centralhackathon.repository.CouncilAssociationRepository;
 import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import java.util.List;
 public class CouncilService {
     private final CouncilAssociationRepository councilAssociationRepository;
     private final UserRepository userRepository;
+    private final AssociationRepository associationRepository;
 
     public void registerAssociation(CouncilAssociationRequest req, String username) {
         CouncilAssociation entity = new CouncilAssociation();
@@ -98,4 +102,70 @@ public class CouncilService {
         dto.setSignificant(e.getSignificant());
         return dto;
     }
+
+    @Transactional(readOnly = true)
+    public Page<CouncilRequestManageResponse> getWaitingBossRequestsForCouncil(
+            String username, Pageable pageable
+    ) {
+        Page<Association> page = associationRepository
+                .findByCouncil_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
+
+        return page.map(CouncilService::toCouncilReceivedBossDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CouncilRequestManageResponse> getWaitingCouncilRequestsForBoss(
+            String username, Pageable pageable
+    ) {
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatusAndResponder(
+                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
+
+        // 사장이 받은 ‘학생회 요청’이라면 Boss 관점 DTO/필드를 원하면 별도 매퍼를 만들자.
+        // 여기선 일단 boss와 동일 형태로 예시(원하면 council 정보로 바꿔줄게).
+        return page.map(CouncilService::toCouncilReceivedBossDto);
+    }
+
+    private static CouncilRequestManageResponse toCouncilReceivedBossDto(Association a) {
+        // Association → BossAssociation
+        BossAssociation b = a.getBoss();
+
+        // Boss 전용 필드 접근 (프록시 안전 캐스팅)
+        Users user = b.getUser();
+        Boss bo = unproxy(user, Boss.class);
+
+        CouncilRequestManageResponse dto = new CouncilRequestManageResponse();
+        dto.setAssociationId(a.getId());          // ★ Association PK
+        dto.setBossAssocId(b.getId());                     // BossAssociation ID
+        dto.setStoreName(bo.getStoreName());      // Boss 전용
+        dto.setIndustry(b.getIndustry());
+        dto.setBoon(b.getBoon());
+        dto.setPeriod(b.getPeriod());
+        dto.setNum(b.getNum());
+        dto.setTargetSchool(b.getTargetSchool());
+        dto.setSignificant(b.getSignificant());
+        dto.setImgUrl(b.getImgUrl());
+        return dto;
+    }
+    @Transactional(readOnly = true)
+    public Page<CouncilRequestManageResponse> getCouncilAssociationsByStatuses(
+            String username,
+            AssociationCondition status,
+            Pageable pageable
+    ) {
+
+        Page<Association> page = associationRepository
+                .findByCouncil_User_UsernameAndStatus(username, status, pageable);
+
+        return page.map(CouncilService::toCouncilReceivedBossDto);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T unproxy(Object entity, Class<T> targetType) {
+        Object impl = (entity instanceof HibernateProxy)
+                ? ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation()
+                : entity;
+        return (T) impl;
+}
 }

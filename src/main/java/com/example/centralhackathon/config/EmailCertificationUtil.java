@@ -32,6 +32,23 @@ public class EmailCertificationUtil {
 
     }
 
+    public void sendAssocEmail(String email, String title, String content) throws MessagingException {
+        sendAssoc(email, title, content);
+
+    }
+    //이메일을 전송
+    private void sendAssoc(String sendTo, String title, String content) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+
+        MimeMessageHelper helper = new MimeMessageHelper(message,true,"utf-8");
+        helper.setFrom(sender);
+        helper.setTo(sendTo);
+        helper.setSubject(title);
+        helper.setText(content,true);
+        mailSender.send(message);
+
+    }
+
     //이메일을 전송
     private void send(String sendTo, String title, String content, String code) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();

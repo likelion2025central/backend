@@ -94,6 +94,7 @@ public class UserService {
         entity.setPhone(boss.getPhone());
         entity.setBizRegNo(boss.getBizRegNo());
         entity.setStoreName(boss.getStoreName());
+        entity.setEmail(boss.getEmail());
         userRepository.save(entity);
     }
 
