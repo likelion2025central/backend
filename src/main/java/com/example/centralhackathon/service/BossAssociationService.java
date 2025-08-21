@@ -144,6 +144,18 @@ public class BossAssociationService {
         return page.map(BossAssociationService::toBossSentToCouncilDto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<BossRequestManageResponse> getCouncilAssociationsByStatusForBoss(
+            String username,
+            AssociationCondition status,
+            Pageable pageable
+    ) {
+        Page<Association> page = associationRepository
+                .findByBoss_User_UsernameAndStatus(username, status, pageable);
+
+        return page.map(BossAssociationService::toBossSentToCouncilDto);
+    }
+
     // 공용 매퍼: Association → CouncilAssociation 중심으로 DTO 생성
     private static BossRequestManageResponse toBossReceivedFromCouncilDto(Association a) {
         CouncilAssociation c = a.getCouncil();
@@ -169,6 +181,7 @@ public class BossAssociationService {
     private static BossRequestManageResponse toBossSentToCouncilDto(Association a) {
         return toBossReceivedFromCouncilDto(a);
     }
+
 
     @SuppressWarnings("unchecked")
     private static <T> T unproxy(Object entity, Class<T> targetType) {

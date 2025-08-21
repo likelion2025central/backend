@@ -8,6 +8,7 @@ import com.example.centralhackathon.dto.Request.PagePayload;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
 import com.example.centralhackathon.dto.Response.CouncilAssociationResponse;
 import com.example.centralhackathon.dto.Response.CouncilRequestManageResponse;
+import com.example.centralhackathon.entity.AssociationCondition;
 import com.example.centralhackathon.service.CouncilService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -74,6 +77,10 @@ public class CouncilController {
         return ResponseEntity.ok(new ApiResponse(true, "희망 제휴 수정 완료", updated));
     }
 
+    @Operation(
+            summary = "받은 요청",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다"
+    )
     @GetMapping("/received/waiting")
     public ResponseEntity<Page<CouncilRequestManageResponse>> getReceivedWaiting(
             @AuthenticationPrincipal(expression = "username") String username,
@@ -84,6 +91,10 @@ public class CouncilController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(
+            summary = "보낸 요청",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다"
+    )
     @GetMapping("/sent/waiting")
     public ResponseEntity<Page<CouncilRequestManageResponse>> getSendWaiting(
             @AuthenticationPrincipal(expression = "username") String username,
@@ -91,6 +102,21 @@ public class CouncilController {
     ) {
         Page<CouncilRequestManageResponse> result =
                 councilService.getWaitingCouncilRequestsForBoss(username, pageable);
+        return ResponseEntity.ok(result);
+    }
+    @Operation(
+            summary = "협의중 / 제휴 확정 볼 수 있는거",
+            description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다" +
+                    "그리고 선택지는 NEGOTIATING이 협의중, CONFIRMED가 제휴 확정입니다 나머지는 안쓰는 필드니까 신경 X"
+    )
+    @GetMapping("/requests")
+    public ResponseEntity<Page<CouncilRequestManageResponse>> getCouncilRequests(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @RequestParam(name = "status", required = false) AssociationCondition status,
+            @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<CouncilRequestManageResponse> result =
+                councilService.getCouncilAssociationsByStatuses(username, status, pageable);
         return ResponseEntity.ok(result);
     }
 

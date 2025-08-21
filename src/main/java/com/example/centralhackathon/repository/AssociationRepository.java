@@ -8,33 +8,10 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
+
 public interface AssociationRepository extends JpaRepository<Association, Long> {
-    @Query("""
-    select a.boss
-    from Association a
-    where a.council.user.username = :username
-      and a.status = :status
-      and a.responder = :responder
-""")
-    Page<BossAssociation> findBossAssociationsByCouncilUsernameAndStatusAndResponder(
-            @Param("username") String username,
-            @Param("status") AssociationCondition status,
-            @Param("responder") Role responder,
-            Pageable pageable
-    );
-    @Query("""
-    select a.council
-    from Association a
-    where a.boss.user.username = :username
-      and a.status = :status
-      and a.responder = :responder
-""")
-    Page<CouncilAssociation> findCouncilAssociationsByBossUsernameAndStatusAndResponder(
-            @Param("username") String username,
-            @Param("status") AssociationCondition status,
-            @Param("responder") Role responder,
-            Pageable pageable
-    );
+
 
     // 학생회가 받은 요청 (responder = COUNCIL) 중 상태 필터
     @EntityGraph(attributePaths = {"boss", "boss.user"})
@@ -51,6 +28,21 @@ public interface AssociationRepository extends JpaRepository<Association, Long> 
             String username,
             AssociationCondition status,
             Role responder,
+            Pageable pageable
+    );
+
+    // 학생회가 관여한(보낸/받은 무관) + 상태 다중 필터
+    @EntityGraph(attributePaths = {"boss", "boss.user"})
+    Page<Association> findByCouncil_User_UsernameAndStatus(
+            String username,
+           AssociationCondition status,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"council", "council.user"})
+    Page<Association> findByBoss_User_UsernameAndStatus(
+            String username,
+            AssociationCondition status,
             Pageable pageable
     );
 }

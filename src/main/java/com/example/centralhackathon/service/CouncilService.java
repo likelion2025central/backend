@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CouncilService {
@@ -145,6 +147,18 @@ public class CouncilService {
         dto.setSignificant(b.getSignificant());
         dto.setImgUrl(b.getImgUrl());
         return dto;
+    }
+    @Transactional(readOnly = true)
+    public Page<CouncilRequestManageResponse> getCouncilAssociationsByStatuses(
+            String username,
+            AssociationCondition status,
+            Pageable pageable
+    ) {
+
+        Page<Association> page = associationRepository
+                .findByCouncil_User_UsernameAndStatus(username, status, pageable);
+
+        return page.map(CouncilService::toCouncilReceivedBossDto);
     }
 
     @SuppressWarnings("unchecked")
