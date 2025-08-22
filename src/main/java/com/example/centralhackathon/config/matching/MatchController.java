@@ -77,7 +77,6 @@ public class MatchController {
     @Operation(
             summary = "신경 X",
             description = "사장님 작성 제휴아이디 넣으면 벡터 DB에 임베딩. 쓸일 없음 백엔드 테스트용" )
-    @GetMapping("/boss/{id}")
     @PostMapping("/reindex/boss/{id}")
     public String reindexBoss(@PathVariable Long id) {
         var b = bossRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Boss not found"));
