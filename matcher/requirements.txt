@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+FlagEmbedding>=1.2.10
+torch
