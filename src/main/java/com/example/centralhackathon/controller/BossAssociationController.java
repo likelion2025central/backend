@@ -34,6 +34,9 @@ public class BossAssociationController {
 
     private final BossAssociationService bossAssociationService;
 
+    @Operation(
+            summary = "사장 희망제휴 작성",
+            description = "-")
     @PostMapping(value = "/association/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse> register(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -44,6 +47,7 @@ public class BossAssociationController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse(true, "사장님 제휴 등록 완료", null));
     }
+
     @Operation(
             summary = "작성한 희망 제휴들 조회",
             description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다"

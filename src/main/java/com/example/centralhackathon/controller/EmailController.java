@@ -5,6 +5,7 @@ import com.example.centralhackathon.config.ApiResponse;
 import com.example.centralhackathon.dto.Request.EmailRequestDto;
 import com.example.centralhackathon.dto.Request.EmailVerifyDto;
 import com.example.centralhackathon.service.MailSendService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class EmailController {
 
     private final MailSendService mailSendService;
 
+    @Operation(
+            summary = "이메일 인증 메일 보내기",
+            description = "-")
     @PostMapping("/send")
     public ResponseEntity<?> SendEmail(@RequestBody @Valid EmailRequestDto emailRequestDto){
         try{
@@ -33,6 +37,9 @@ public class EmailController {
         }
     }
 
+    @Operation(
+            summary = "메일 인증번호",
+            description = "-")
     @PostMapping("/verify")
     public ResponseEntity<?> verifyEmail(@RequestBody @Valid EmailVerifyDto emailVerifyDto){
         boolean verify = mailSendService.verifyCode(emailVerifyDto);
