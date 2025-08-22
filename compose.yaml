@@ -1,33 +1,68 @@
 version: "3.9"
 
+networks:
+  appnet:
+
 services:
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    ports:
-      - "6333:6333"
-    volumes:
-      - qdrant_data:/qdrant/storage
-    restart: unless-stopped
   spring:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: spring
-    ports:
-      - "8080:8080"
     restart: unless-stopped
+    expose:
+      - "8080"                 # 외부 미공개
+    networks: [appnet]
+    depends_on:
+      qdrant:
+        condition: service_started   # 필요시 health로 강화
     environment:
-      QDRANT_URL: http://qdrant:6333
+      # app.qdrant.base-url -> http://qdrant:6333 로 맞춰줌
+      APP_QDRANT_BASE_URL: http://qdrant:6333
 
   fastapi:
     build:
       context: ./matcher
       dockerfile: Dockerfile
     container_name: fastapi
-    ports:
-      - "8000:8000"
     restart: unless-stopped
+    expose:
+      - "8000"                 # 외부 미공개
+    networks: [appnet]
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    expose:
+      - "6333"                 # 외부 미공개
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks: [appnet]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: [appnet]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - spring
+      - fastapi
+      - qdrant
 
 volumes:
-  qdrant_data: {}
+  qdrant_data:
+  caddy_data:
+  caddy_config:
