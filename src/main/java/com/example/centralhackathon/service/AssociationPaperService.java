@@ -11,12 +11,14 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.MessagingException;
 import java.sql.Date;
+import java.time.LocalDate;
 
 
 @Service
@@ -120,6 +122,50 @@ public class AssociationPaperService {
                         "대상 | [" + req.getTargetSchool()+" "+req.getTargetCollege()+" "+req.getTargetDepartment()+"]";
 
         emailUtil.sendAssocEmail(to, title, content);
+    }
+
+    public Page<AssociationPaperResponse> getConfirmedActivePapers(
+            String school,
+            String college,
+            String department,
+            String category,
+            int page,
+            int size
+    ) {
+        Page<AssociationPaper> result = associationPaperRepository.findConfirmedActivePapers(
+                LocalDate.now(),
+                emptyToNull(school),
+                emptyToNull(college),
+                emptyToNull(department),
+                emptyToNull(category),
+                PageRequest.of(page, size)
+        );
+
+        // Page.map 으로 깔끔하게 DTO 변환
+        return result.map(this::toResponse);
+    }
+
+    public Page<AssociationPaperResponse> getConfirmedActivePapersByStoreName(
+            String school,
+            String college,
+            String department,
+            String keyWord,
+            int page,
+            int size
+    ) {
+        Page<AssociationPaper> result = associationPaperRepository.findConfirmedActivePapersByStoreName(
+                LocalDate.now(),
+                emptyToNull(school),
+                emptyToNull(college),
+                emptyToNull(department),
+                emptyToNull(keyWord),
+                PageRequest.of(page, size)
+        );
+        return result.map(this::toResponse);
+    }
+
+    private String emptyToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
     }
 
 
