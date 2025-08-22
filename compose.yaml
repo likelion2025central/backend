@@ -1,6 +1,18 @@
-version: "3.9"
-
 services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
   spring:
     build:
       context: .
@@ -9,6 +21,14 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    environment:
+      # ← 코드에서 읽는 프로퍼티 키에 맞춰 사용 (예시)
+      QDRANT_URL: http://qdrant:6333
+      # 또는 Spring config 형태라면:
+      # SPRING_APPLICATION_JSON: '{"qdrant":{"url":"http://qdrant:6333"}}'
+    depends_on:
+      qdrant:
+        condition: service_healthy
 
   fastapi:
     build:
@@ -18,16 +38,3 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
-
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    ports:
-      - "6333:6333"    # REST
-      # - "6334:6334"  # gRPC가 필요하면 주석 해제
-    volumes:
-      - qdrant_data:/qdrant/storage
-    restart: unless-stopped
-
-volumes:
-  qdrant_data:
