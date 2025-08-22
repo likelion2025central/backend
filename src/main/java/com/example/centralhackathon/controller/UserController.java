@@ -8,6 +8,7 @@ import com.example.centralhackathon.dto.Request.LoginRequest;
 import com.example.centralhackathon.dto.Request.NormalSignUp;
 import com.example.centralhackathon.dto.Response.LoginResponse;
 import com.example.centralhackathon.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,9 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(
+            summary = "중복확인",
+            description = "-")
     @GetMapping("/duplicate")
     public ResponseEntity<ApiResponse> checkDuplicate(@RequestParam("username") String username) {
         boolean dup = userService.isDuplicate(username);
@@ -39,6 +43,9 @@ public class UserController {
     }*/
 
 
+    @Operation(
+            summary = "학생회 회원가입",
+            description = "-")
     @PostMapping("/signup/council")
     public ResponseEntity<ApiResponse> signUpCouncil(@RequestBody CouncilSignUp req) {
         userService.CouncilSignUp(req);
@@ -47,6 +54,9 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "사장 회원가입",
+            description = "-")
     @PostMapping("/signup/boss")
     public ResponseEntity<ApiResponse> signUpBoss(@RequestBody BossSignUp req) {
         userService.BossSignUp(req);
@@ -55,6 +65,9 @@ public class UserController {
     }
 
 
+    @Operation(
+            summary = "로그인",
+            description = "-")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest req) {
         try {

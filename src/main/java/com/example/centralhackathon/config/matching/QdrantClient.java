@@ -7,6 +7,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +19,29 @@ public class QdrantClient {
     @Value("${app.qdrant.base-url}") private String baseUrl;
     private final WebClient web = WebClient.builder().build();
 
-    /** 컬렉션 생성(idempotent) */
     public void createCollectionIfMissing(String collection, int dim) {
-        Map<String,Object> body = Map.of("vectors", Map.of("size", dim, "distance", "Cosine"));
-        web.put().uri(baseUrl + "/collections/" + collection)
-           .contentType(MediaType.APPLICATION_JSON)
-           .bodyValue(body)
-           .retrieve().toBodilessEntity().block();
+        Map<String, Object> createBody = Map.of(
+                "vectors", Map.of("size", dim, "distance", "Cosine")
+        );
+
+        // 먼저 GET 요청으로 존재 여부 확인
+        boolean exists = Boolean.TRUE.equals(
+                web.get().uri(baseUrl+"/collections/" + collection)
+                        .retrieve()
+                        .toBodilessEntity()
+                        .map(r -> true)
+                        .onErrorReturn(WebClientResponseException.NotFound.class, false)
+                        .block()
+        );
+
+        if (!exists) {
+            web.put().uri(baseUrl+"/collections/" + collection)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(createBody)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+        }
     }
 
     /** upsert */
@@ -48,6 +65,7 @@ public class QdrantClient {
         Map<String,Object> req = new HashMap<>();
         req.put("vector", queryVec);
         req.put("top", top);
+        req.put("with_payload", true);
         if (filter != null) req.put("filter", filter);
 
         Map<String,Object> resp = web.post().uri(baseUrl + "/collections/" + collection + "/points/search")
@@ -56,6 +74,14 @@ public class QdrantClient {
            .retrieve()
            .bodyToMono(new ParameterizedTypeReference<Map<String,Object>>(){}).block();
 
-        return (List<Map<String,Object>>) resp.get("result");
+        List<Map<String,Object>> results = (List<Map<String,Object>>) resp.get("result");
+
+        // 변환: score → similarity (0~1)
+        for (Map<String,Object> r : results) {
+            double rawScore = ((Number) r.get("score")).doubleValue();
+            double similarity = Math.max(0, Math.min(1, (rawScore + 1) / 2));
+            r.put("similarity", similarity);
+        }
+        return results;
     }
 }

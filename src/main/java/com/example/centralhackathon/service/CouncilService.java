@@ -1,5 +1,7 @@
 package com.example.centralhackathon.service;
 
+import com.example.centralhackathon.config.matching.BossAssociationChangedEvent;
+import com.example.centralhackathon.config.matching.CouncilAssociationChangedEvent;
 import com.example.centralhackathon.dto.Request.CouncilAssociationRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Response.BossAssociationResponse;
@@ -12,6 +14,7 @@ import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class CouncilService {
     private final CouncilAssociationRepository councilAssociationRepository;
     private final UserRepository userRepository;
     private final AssociationRepository associationRepository;
+    private final ApplicationEventPublisher publisher;
 
     public void registerAssociation(CouncilAssociationRequest req, String username) {
         CouncilAssociation entity = new CouncilAssociation();
@@ -39,7 +43,10 @@ public class CouncilService {
         entity.setTargetCollege(req.getTargetCollege());
         entity.setTargetDepartment(req.getTargetDepartment());
         entity.setSignificant(req.getSignificant());
-        councilAssociationRepository.save(entity);
+        CouncilAssociation saved = councilAssociationRepository.save(entity);
+
+        publisher.publishEvent(new CouncilAssociationChangedEvent(saved.getId()));
+
     }
     @Transactional
     public Page<CouncilAssociationResponse> getCouncilAssociations(String username, Pageable pageable) {

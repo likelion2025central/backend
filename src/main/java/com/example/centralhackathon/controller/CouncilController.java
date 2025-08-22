@@ -31,7 +31,7 @@ import java.util.List;
 public class CouncilController {
     private final CouncilService councilService;
     @Operation(
-            summary = "작성한 희망 제휴 작성"
+            summary = "희망 제휴 작성"
     )
     @PostMapping("/association/register")
     public ResponseEntity<ApiResponse> register(@RequestBody CouncilAssociationRequest req, @AuthenticationPrincipal UserDetails userDetails) {

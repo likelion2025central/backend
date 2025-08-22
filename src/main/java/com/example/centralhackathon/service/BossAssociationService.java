@@ -1,4 +1,5 @@
 package com.example.centralhackathon.service;
+import com.example.centralhackathon.config.matching.BossAssociationChangedEvent;
 import com.example.centralhackathon.dto.Request.BossAssociationRequest;
 import com.example.centralhackathon.dto.Request.BossAssociationUpdateRequest;
 import com.example.centralhackathon.dto.Request.CouncilAssociationUpdateRequest;
@@ -13,6 +14,7 @@ import com.example.centralhackathon.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class BossAssociationService {
     private final UserRepository userRepository;
     private final S3Service s3Service;
     private final AssociationRepository associationRepository;
+    private final ApplicationEventPublisher publisher;
 
     @Transactional
     public BossAssociationResponse register(String username,
@@ -54,8 +57,11 @@ public class BossAssociationService {
             assoc.setImgUrl(url);
         }
 
-        bossAssociationRepository.save(assoc);
-        return toResponse(assoc);
+        BossAssociation saved = bossAssociationRepository.save(assoc);
+
+        publisher.publishEvent(new BossAssociationChangedEvent(saved.getId()));
+
+        return toResponse(saved);
     }
 
     private BossAssociationResponse toResponse(BossAssociation e) {
@@ -154,6 +160,9 @@ public class BossAssociationService {
                 .findByBoss_User_UsernameAndStatus(username, status, pageable);
 
         return page.map(BossAssociationService::toBossSentToCouncilDto);
+    }
+    public String getStoreName(Long userId){
+        return userRepository.findBossStoreNameByUserId(userId);
     }
 
     // 공용 매퍼: Association → CouncilAssociation 중심으로 DTO 생성
