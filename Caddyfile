@@ -1,0 +1,13 @@
+# FastAPI
+api.sonsaekim.site {
+	encode zstd gzip
+	reverse_proxy fastapi:8000
+}
+
+# Spring Boot
+app.sonsaekim.site {
+	encode zstd gzip
+	reverse_proxy spring:8080
+}
+
+
