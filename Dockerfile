@@ -5,7 +5,7 @@ WORKDIR /workspace
 # 1) Gradle Wrapper와 설정 파일을 먼저 복사
 COPY gradlew ./
 COPY gradle ./gradle
-COPY settings.gradle* build.gradle* gradle.properties ./
+COPY settings.gradle* build.gradle* ./
 
 # 2) 앱 소스 복사
 COPY src ./src
