@@ -23,6 +23,7 @@ services:
       APP_QDRANT_BASE_URL: http://qdrant:6333
       SPRING_DATA_REDIS_HOST: host.docker.internal
       SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_PASSWORD:"1234"
 
   fastapi:
     build:
