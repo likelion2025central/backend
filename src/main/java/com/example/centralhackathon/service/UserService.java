@@ -26,28 +26,6 @@ public class UserService {
         return userRepository.existsByUsername(userName);
     }
 
-    /*
-    @Transactional
-    public void NormalSignUp(NormalSignUp normal) {
-        if (normal == null) {
-            throw new IllegalArgumentException("요청이 올바르지 않습니다.");
-        }
-        if (normal.getUsername() == null || normal.getUsername().isBlank()) {
-            throw new IllegalArgumentException("아이디는 필수입니다.");
-        }
-        if (normal.getPassword() == null || normal.getPassword().isBlank()) {
-            throw new IllegalArgumentException("비밀번호는 필수입니다.");
-        }
-        if(userRepository.existsByUsername(normal.getUsername())){
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
-        }
-        NormalUser entity = new NormalUser();
-        entity.setUsername(normal.getUsername());
-        entity.setPassword(encoder.encode(normal.getPassword()));
-        entity.setSchoolName(normal.getSchoolName());
-        entity.setMajor(normal.getMajor());
-        userRepository.save(entity);
-    }*/
 
     @Transactional
     public void CouncilSignUp(CouncilSignUp council) {
