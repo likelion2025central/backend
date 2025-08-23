@@ -22,9 +22,7 @@ services:
       # Qdrant 내부 통신
       APP_QDRANT_BASE_URL: http://qdrant:6333
       # Redis (컨테이너 간 내부 호스트명 사용)
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: "6379"
-      SPRING_REDIS_PASSWORD: "1234"
+      SPRING_DATA_REDIS_URL: redis://:1234@redis:6379/0
       # (선택) 리포지토리 스캔 끄기
       SPRING_REDIS_REPOSITORIES_ENABLED: "false"
 
