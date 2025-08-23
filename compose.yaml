@@ -55,19 +55,15 @@ services:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
-    command: |
-      redis-server --appendonly yes --requirepass "$REDIS_PASSWORD"
-    environment:
-      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    command: [ "redis-server","--appendonly","yes","--requirepass","1234" ]
     volumes:
       - redis_data:/data
-    networks: [appnet]
+    networks: [ appnet ]
     healthcheck:
-      test: ["CMD-SHELL", 'redis-cli -a "$REDIS_PASSWORD" ping | grep PONG']
+      test: [ "CMD","redis-cli","-a","1234","ping" ]
       interval: 5s
       timeout: 3s
       retries: 30
-    # 포트 외부 노출 없음 (보안그룹에 6379 열 필요 X)
 
   caddy:
     image: caddy:2
