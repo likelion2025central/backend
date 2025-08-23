@@ -24,7 +24,7 @@ services:
       # Redis (컨테이너 간 내부 호스트명 사용)
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: "6379"
-      SPRING_DATA_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      SPRING_DATA_REDIS_PASSWORD: "1234"
       # (선택) 리포지토리 스캔 끄기
       SPRING_DATA_REDIS_REPOSITORIES_ENABLED: "false"
 
