@@ -29,7 +29,8 @@ public class AssociationPaperController {
 
     @Operation(
             summary = "제휴 협약서 작성",
-            description = "id에는 제휴 협약서를 작성할 제휴 객체의 id넣으심 됩니다(assocId)")
+            description = "id에는 제휴 협약서를 작성할 제휴 객체의 id넣으심 됩니다(assocId)" +
+                    "requester에는 신청하는 측 COUNCIL/BOSS를 넣으면 됩니다")
     @PostMapping("/{associationId}")
     public ResponseEntity<AssociationPaperResponse> createPaper(
             @PathVariable Long associationId,

@@ -85,7 +85,7 @@ public class MatchController {
     }
     @Operation(
             summary = "신경 X",
-            description = "사장님 작성 제휴아이디 넣으면 벡터 DB에 임베딩. 쓸일 없음 백엔드 테스트용" )
+            description = "학생회 작성 제휴아이디 넣으면 벡터 DB에 임베딩. 쓸일 없음 백엔드 테스트용" )
     @PostMapping("/reindex/council/{id}")
     public String reindexCouncil(@PathVariable Long id) {
         var c = councilRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("Council not found"));
