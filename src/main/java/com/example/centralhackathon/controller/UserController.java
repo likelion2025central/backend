@@ -25,13 +25,18 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(
-            summary = "중복확인",
-            description = "-")
+    @Operation(summary = "중복확인", description = "-")
     @GetMapping("/duplicate")
     public ResponseEntity<ApiResponse> checkDuplicate(@RequestParam("username") String username) {
         boolean dup = userService.isDuplicate(username);
-        return ResponseEntity.ok(new ApiResponse(true, dup ? "중복 아이디" : "사용 가능", dup));
+
+        if (dup) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // 409 Conflict
+                    .body(new ApiResponse(false, "중복 아이디", null));
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "사용 가능", null));
     }
 
 /*
