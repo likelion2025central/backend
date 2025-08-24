@@ -64,10 +64,10 @@ public class AssociationService {
                 String bossEmail = bo.getEmail();
                 String title ="[제휴고리 알림] 제휴 요청이 도착했습니다.";
                 String content=
-                        "[제휴고리 알림] 제휴 요청이 도착했습니다.\n" +
-                                councilInfo +
-                                "요청자 이메일 | " + councilEmail + "\n" +
-                                "간단 협약서 바로가기 | https://jehugori.com.";
+                        "[제휴고리 알림] 제휴 요청이 도착했습니다.</br>" +
+                                "["+councilInfo+"] " + "<->" + " ["+bo.getStoreName()+"]</br>" +
+                                "학생회 이메일 | " + councilEmail + "</br>" +
+                                "간단 협약서 바로가기 | https://jehugori.netilfy.app";
 
                 emailUtil.sendAssocEmail(bossEmail, title, content);
             }
@@ -110,10 +110,12 @@ public class AssociationService {
                 String councilEmail = sc.getEmail();
                 String title ="[제휴고리 알림] 제휴 요청이 도착했습니다.";
                 String content=
-                        "[제휴고리 알림] 제휴 요청이 도착했습니다.\n" +
-                                BossInfo +
-                                "요청자 이메일 | " + bossEmail + "\n" +
-                                "간단 협약서 바로가기 | https://jehugori.com.";
+                        "[제휴고리 알림] 제휴 요청이 도착했습니다.</br>" +
+                                "["+BossInfo+"] " +
+                                "<-> " +
+                                "["+sc.getSchoolName()+" "+sc.getCollege()+" "+sc.getDepartment()+ "]</br>" +
+                                "요청자 이메일 | " + bossEmail + "</br>" +
+                                "간단 협약서 바로가기 | https://jehugori.netilfy.app";
 
                 emailUtil.sendAssocEmail(councilEmail, title, content);
             }
