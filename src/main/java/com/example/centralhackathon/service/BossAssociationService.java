@@ -126,11 +126,10 @@ public class BossAssociationService {
         return toResponse(entity);
     }
 
-    @Transactional(readOnly = true)
+    /** Boss 입장 — 받은(inbox): council -> boss */
     public Page<BossRequestManageResponse> getWaitingCouncilRequestsForBoss(
             String username, Pageable pageable
     ) {
-        // 사장이 받은 '대기중' 요청 → responder = BOSS
         Page<Association> page = associationRepository
                 .findByBoss_User_UsernameAndStatusAndResponder(
                         username, AssociationCondition.WAITING, Role.BOSS, pageable);
@@ -138,17 +137,17 @@ public class BossAssociationService {
         return page.map(BossAssociationService::toBossReceivedFromCouncilDto);
     }
 
-    @Transactional(readOnly = true)
+    /** Boss 입장 — 보낸(outbox): boss -> council */
     public Page<BossRequestManageResponse> getWaitingBossRequestsForCouncil(
             String username, Pageable pageable
     ) {
-        // 사장이 보낸 '대기중' 요청 → responder = COUNCIL
         Page<Association> page = associationRepository
-                .findByBoss_User_UsernameAndStatusAndResponder(
-                        username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
+                .findByBoss_User_UsernameAndStatusAndRequester(
+                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
 
         return page.map(BossAssociationService::toBossSentToCouncilDto);
     }
+
 
     @Transactional(readOnly = true)
     public Page<BossRequestManageResponse> getCouncilAssociationsByStatusForBoss(

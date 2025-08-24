@@ -110,7 +110,7 @@ public class CouncilService {
         return dto;
     }
 
-    @Transactional(readOnly = true)
+    /** Council 입장 — 받은(inbox): boss -> council */
     public Page<CouncilRequestManageResponse> getWaitingBossRequestsForCouncil(
             String username, Pageable pageable
     ) {
@@ -121,16 +121,14 @@ public class CouncilService {
         return page.map(CouncilService::toCouncilReceivedBossDto);
     }
 
-    @Transactional(readOnly = true)
+    /** Council 입장 — 보낸(outbox): council -> boss */
     public Page<CouncilRequestManageResponse> getWaitingCouncilRequestsForBoss(
             String username, Pageable pageable
     ) {
         Page<Association> page = associationRepository
-                .findByBoss_User_UsernameAndStatusAndResponder(
-                        username, AssociationCondition.WAITING, Role.BOSS, pageable);
+                .findByCouncil_User_UsernameAndStatusAndRequester(
+                        username, AssociationCondition.WAITING, Role.COUNCIL, pageable);
 
-        // 사장이 받은 ‘학생회 요청’이라면 Boss 관점 DTO/필드를 원하면 별도 매퍼를 만들자.
-        // 여기선 일단 boss와 동일 형태로 예시(원하면 council 정보로 바꿔줄게).
         return page.map(CouncilService::toCouncilReceivedBossDto);
     }
 

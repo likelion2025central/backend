@@ -98,6 +98,8 @@ public class BossAssociationController {
                 bossAssociationService.getWaitingCouncilRequestsForBoss(username, pageable);
         return ResponseEntity.ok(result);
     }
+
+
     @Operation(
             summary = "보낸 요청",
             description = "{\"page\": 0} 이렇게 그냥 몇페이지 볼건지만 보내면 됩니다"
