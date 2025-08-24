@@ -35,6 +35,8 @@ services:
     expose:
       - "8001"                 # 외부 미공개
     networks: [appnet]
+    volumes:
+      - ./hf_cache:/root/.cache/huggingface
     # FastAPI도 Redis 쓴다면 (주석 해제)
     # environment:
     #   REDIS_URL: "redis://:$(REDIS_PASSWORD)@redis:6379/0"
