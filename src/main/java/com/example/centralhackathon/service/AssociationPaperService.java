@@ -3,6 +3,7 @@ package com.example.centralhackathon.service;
 
 import com.example.centralhackathon.config.EmailCertificationUtil;
 import com.example.centralhackathon.dto.Request.AssociationPaperRequest;
+import com.example.centralhackathon.dto.Response.AssocForStudentResponse;
 import com.example.centralhackathon.dto.Response.AssociationPaperResponse;
 import com.example.centralhackathon.entity.*;
 import com.example.centralhackathon.repository.AssociationPaperRepository;
@@ -124,7 +125,7 @@ public class AssociationPaperService {
         emailUtil.sendAssocEmail(to, title, content);
     }
 
-    public Page<AssociationPaperResponse> getConfirmedActivePapers(
+    public Page<AssocForStudentResponse> getConfirmedActivePapers(
             String school,
             String college,
             String department,
@@ -132,20 +133,14 @@ public class AssociationPaperService {
             int page,
             int size
     ) {
-        Page<AssociationPaper> result = associationPaperRepository.findConfirmedActivePapers(
+        return associationPaperRepository.findConfirmedActiveStudentDtos(
                 LocalDate.now(),
-                emptyToNull(school),
-                emptyToNull(college),
-                emptyToNull(department),
-                emptyToNull(category),
+                emptyToNull(school), emptyToNull(college), emptyToNull(department), emptyToNull(category),
                 PageRequest.of(page, size)
         );
-
-        // Page.map 으로 깔끔하게 DTO 변환
-        return result.map(this::toResponse);
     }
 
-    public Page<AssociationPaperResponse> getConfirmedActivePapersByStoreName(
+    public Page<AssocForStudentResponse> getConfirmedActivePapersByStoreName(
             String school,
             String college,
             String department,
@@ -153,15 +148,11 @@ public class AssociationPaperService {
             int page,
             int size
     ) {
-        Page<AssociationPaper> result = associationPaperRepository.findConfirmedActivePapersByStoreName(
+        return associationPaperRepository.findConfirmedActiveStudentDtosByStoreName(
                 LocalDate.now(),
-                emptyToNull(school),
-                emptyToNull(college),
-                emptyToNull(department),
-                emptyToNull(keyWord),
+                emptyToNull(school), emptyToNull(college), emptyToNull(department), emptyToNull(keyWord),
                 PageRequest.of(page, size)
         );
-        return result.map(this::toResponse);
     }
 
     private String emptyToNull(String s) {

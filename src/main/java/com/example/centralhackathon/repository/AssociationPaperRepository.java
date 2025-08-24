@@ -1,5 +1,6 @@
 package com.example.centralhackathon.repository;
 
+import com.example.centralhackathon.dto.Response.AssocForStudentResponse;
 import com.example.centralhackathon.entity.AssociationCondition;
 import com.example.centralhackathon.entity.AssociationPaper;
 import com.example.centralhackathon.entity.Role;
@@ -27,27 +28,6 @@ public interface AssociationPaperRepository extends JpaRepository<AssociationPap
             Pageable pageable
     );
 
-    @Query("""
-    select ap
-    from AssociationPaper ap
-    join ap.association a
-    join a.boss b
-    where ap.endDate > :today
-      and a.status = com.example.centralhackathon.entity.AssociationCondition.CONFIRMED
-      and (:school  is null or ap.targetSchool = :school)
-      and (:college is null or ap.targetCollege = :college)
-      and (:department is null or ap.targetDepartment = :department)
-      and (:category is null or b.industry = :category)
-    order by ap.endDate asc
-""")
-    Page<AssociationPaper> findConfirmedActivePapers(
-            @Param("today") LocalDate today,
-            @Param("school") String school,
-            @Param("college") String college,
-            @Param("department") String department, // <- 여기와 쿼리의 :department 일치
-            @Param("category") String category,
-            Pageable pageable
-    );
 
     @Query("""
         select ap
@@ -70,4 +50,57 @@ public interface AssociationPaperRepository extends JpaRepository<AssociationPap
             @Param("keyWord") String keyWord,
             Pageable pageable
     );
+
+    @Query("""
+select new com.example.centralhackathon.dto.Response.AssocForStudentResponse(
+  ap.id, a.id, ap.councilInfo, ap.storeName, ap.boon,
+  ap.startDate, ap.endDate, ap.targetSchool, ap.targetCollege, ap.targetDepartment,
+  b.imgUrl
+)
+from AssociationPaper ap
+join ap.association a
+join a.boss b
+where ap.endDate > :today
+  and a.status = com.example.centralhackathon.entity.AssociationCondition.CONFIRMED
+  and (:school  is null or ap.targetSchool      = :school)
+  and (:college is null or ap.targetCollege     = :college)
+  and (:department is null or ap.targetDepartment = :department)
+  and (:category is null or b.industry          = :category)
+order by ap.endDate asc
+""")
+    Page<AssocForStudentResponse> findConfirmedActiveStudentDtos(
+            @Param("today") LocalDate today,
+            @Param("school") String school,
+            @Param("college") String college,
+            @Param("department") String department,
+            @Param("category") String category,
+            Pageable pageable
+    );
+
+    @Query("""
+select new com.example.centralhackathon.dto.Response.AssocForStudentResponse(
+  ap.id, a.id, ap.councilInfo, ap.storeName, ap.boon,
+  ap.startDate, ap.endDate, ap.targetSchool, ap.targetCollege, ap.targetDepartment,
+  b.imgUrl
+)
+from AssociationPaper ap
+join ap.association a
+join a.boss b
+where ap.endDate > :today
+  and a.status = com.example.centralhackathon.entity.AssociationCondition.CONFIRMED
+  and (:school  is null or ap.targetSchool      = :school)
+  and (:college is null or ap.targetCollege     = :college)
+  and (:department is null or ap.targetDepartment = :department)
+  and (:keyWord is null or ap.storeName         = :keyWord)
+order by ap.endDate asc
+""")
+    Page<AssocForStudentResponse> findConfirmedActiveStudentDtosByStoreName(
+            @Param("today") LocalDate today,
+            @Param("school") String school,
+            @Param("college") String college,
+            @Param("department") String department,
+            @Param("keyWord") String keyWord,
+            Pageable pageable
+    );
+
 }

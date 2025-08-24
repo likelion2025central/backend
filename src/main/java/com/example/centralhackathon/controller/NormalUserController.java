@@ -1,5 +1,6 @@
 package com.example.centralhackathon.controller;
 
+import com.example.centralhackathon.dto.Response.AssocForStudentResponse;
 import com.example.centralhackathon.dto.Response.AssociationPaperResponse;
 import com.example.centralhackathon.service.AssociationPaperService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ public class NormalUserController {
     private final AssociationPaperService associationPaperService;
 
     @GetMapping("/confirmed-active/category")
-    public Page<AssociationPaperResponse> getConfirmedActivePapers(
+    public Page<AssocForStudentResponse> getConfirmedActivePapers(
             @RequestParam(required = false) String school,
             @RequestParam(required = false) String college,
             @RequestParam(required = false, name = "department") String dept,
@@ -27,7 +28,7 @@ public class NormalUserController {
     }
 
     @GetMapping("/confirmed-active/search")
-    public Page<AssociationPaperResponse> getConfirmedActivePapersByStoreName(
+    public Page<AssocForStudentResponse> getConfirmedActivePapersByStoreName(
             @RequestParam(required = false) String school,
             @RequestParam(required = false) String college,
             @RequestParam(required = false, name = "department") String dept,
