@@ -54,33 +54,47 @@ public class MatchingService {
         return rankTopBosses(bossIds, byId, scores, topN);
     }
 
-    /** 사장님 1건 -> 학생회 다수 */
     public List<MatchCouncilResult> matchFromBoss(Long bossId, int topN) {
         BossAssociation b = bossRepo.findById(bossId)
-            .orElseThrow(() -> new EntityNotFoundException("Boss not found: "+bossId));
+                .orElseThrow(() -> new EntityNotFoundException("Boss not found: " + bossId));
+
         String qText = text.bossText(b);
         float[] qVec = emb.embedOne(qText);
 
         Map<String,Object> filter = null;
         if (notBlank(b.getIndustry())) {
             filter = Map.of("must", List.of(
-                Map.of("key","industry", "match", Map.of("text", b.getIndustry()))
+                    Map.of("key", "industry", "match", Map.of("value", b.getIndustry()))
             ));
         }
 
-        // 1차: Council 컬렉션에서 검색
+        // 1차: 필터 검색
         List<Map<String,Object>> hits = qd.search(councilCol, qVec, 50, filter);
-        List<Long> councilIds = extractIds(hits);
-        if (councilIds.isEmpty()) return List.of();
 
-        Map<Long,CouncilAssociation> byId = councilRepo.findAllById(councilIds).stream()
-            .collect(Collectors.toMap(CouncilAssociation::getId, c->c));
-        List<String> candTexts = councilIds.stream().map(id -> text.councilText(byId.get(id))).toList();
+        // 2차: 무필터 재검색 (필터가 너무 강할 때)
+        if (hits.isEmpty() && filter != null) {
+            hits = qd.search(councilCol, qVec, 50, null);
+        }
+        if (hits.isEmpty()) return List.of();
+
+        List<Long> councilIds = extractIds(hits);
+
+        Map<Long, CouncilAssociation> byId = councilRepo.findAllById(councilIds).stream()
+                .collect(Collectors.toMap(CouncilAssociation::getId, c -> c));
+
+        var filteredIds = councilIds.stream().filter(byId::containsKey).toList();
+        if (filteredIds.isEmpty()) return List.of();
+
+        List<String> candTexts = filteredIds.stream()
+                .map(id -> text.councilText(byId.get(id)))
+                .toList();
 
         List<Double> scores = emb.rerank(qText, candTexts);
-        applySimpleBonusForBossQuery(scores, councilIds, byId, b);
 
-        return rankTopCouncils(councilIds, byId, scores, topN);
+        // (임시 완화) 학교 불일치 페널티 제거 권장
+        applySimpleBonusForBossQuery(scores, filteredIds, byId, b);
+
+        return rankTopCouncils(filteredIds, byId, scores, topN);
     }
 
     // ===== 공통 유틸 =====
