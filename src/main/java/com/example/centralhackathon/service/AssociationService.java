@@ -23,9 +23,6 @@ public class AssociationService {
 
     @Transactional
     public int makeAssociation(List<Long> ids, Role requesterType, Long requesterId) throws MessagingException {
-        if (requesterType == Role.STUDENT) {
-            throw new IllegalArgumentException("요청자 타입으로 STUDENT는 허용되지 않습니다.");
-        }
         int created = 0;
         if (requesterType == Role.COUNCIL) {
             CouncilAssociation council = councilAssociationRepository.findById(requesterId)

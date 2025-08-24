@@ -3,7 +3,6 @@ package com.example.centralhackathon.service;
 import com.example.centralhackathon.dto.Request.*;
 import com.example.centralhackathon.dto.Response.LoginResponse;
 import com.example.centralhackathon.entity.Boss;
-import com.example.centralhackathon.entity.NormalUser;
 import com.example.centralhackathon.entity.StudentCouncil;
 import com.example.centralhackathon.entity.Users;
 import com.example.centralhackathon.jwt.JwtUtil;
