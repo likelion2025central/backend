@@ -33,7 +33,7 @@ services:
     container_name: fastapi
     restart: unless-stopped
     expose:
-      - "8000"                 # 외부 미공개
+      - "8001"                 # 외부 미공개
     networks: [appnet]
     # FastAPI도 Redis 쓴다면 (주석 해제)
     # environment:
