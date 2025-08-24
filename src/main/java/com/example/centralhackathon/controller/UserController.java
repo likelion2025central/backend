@@ -7,12 +7,14 @@ import com.example.centralhackathon.dto.Request.CouncilSignUp;
 import com.example.centralhackathon.dto.Request.LoginRequest;
 import com.example.centralhackathon.dto.Request.NormalSignUp;
 import com.example.centralhackathon.dto.Response.LoginResponse;
+import com.example.centralhackathon.dto.Response.UserProfileResponse;
 import com.example.centralhackathon.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -88,5 +90,13 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, "서버 오류가 발생했습니다.", null));
         }
+    }
+
+    @Operation(
+            summary = "로그인 사용자 정보",
+            description = "토큰이랑 같이 요청 보내면 그냥 사장/학생회 알아서 구분해서 정보줌요")
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> me(@AuthenticationPrincipal(expression = "username") String username) {
+        return ResponseEntity.ok(userService.me(username));
     }
 }

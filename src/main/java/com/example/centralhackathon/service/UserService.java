@@ -2,13 +2,17 @@ package com.example.centralhackathon.service;
 
 import com.example.centralhackathon.dto.Request.*;
 import com.example.centralhackathon.dto.Response.LoginResponse;
+import com.example.centralhackathon.dto.Response.UserProfileResponse;
 import com.example.centralhackathon.entity.Boss;
+import com.example.centralhackathon.entity.Role;
 import com.example.centralhackathon.entity.StudentCouncil;
 import com.example.centralhackathon.entity.Users;
 import com.example.centralhackathon.jwt.JwtUtil;
 import com.example.centralhackathon.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -90,4 +94,40 @@ public class UserService {
 
         return res;
     }
+
+    public UserProfileResponse me(String username) {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+
+        Role role = user.getRole();
+        UserProfileResponse.UserProfileResponseBuilder builder = UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .role(role);
+
+        switch (role) {
+            case COUNCIL -> {
+                StudentCouncil c = (StudentCouncil) user;
+                builder.council(UserProfileResponse.CouncilInfo.builder()
+                        .schoolName(c.getSchoolName())
+                        .college(c.getCollege())
+                        .department(c.getDepartment())
+                        .email(c.getEmail())
+                        .phone(c.getPhone())
+                        .build());
+            }
+            case BOSS -> {
+                Boss b = (Boss) user;
+                builder.boss(UserProfileResponse.BossInfo.builder()
+                        .storeName(b.getStoreName())
+                        .bizRegNo(b.getBizRegNo())
+                        .phone(b.getPhone())
+                        .email(b.getEmail())
+                        .build());
+            }
+        }
+
+        return builder.build();
+    }
+
 }
