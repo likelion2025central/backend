@@ -182,4 +182,20 @@ public class AssociationPaperService {
                 : entity;
         return (T) impl; // 실제 구현체로 반환
     }
+    @Transactional(readOnly = true)
+    public Page<AssociationPaperResponse> getBossPapersConfirmWaitingByRequester(
+            String username,
+            Role requester,                // COUNCIL or BOSS (누가 작성했는지)
+            Pageable pageable
+    ) {
+        Page<AssociationPaper> page = associationPaperRepository
+                .findByAssociation_Boss_User_UsernameAndAssociation_StatusAndRequester(
+                        username,
+                        AssociationCondition.CONFIRM_WAITING,
+                        requester,
+                        pageable
+                );
+        return page.map(this::toResponse);
+    }
+
 }

@@ -27,6 +27,14 @@ public interface AssociationPaperRepository extends JpaRepository<AssociationPap
             Role requester,
             Pageable pageable
     );
+    // 사장님 측: 내가 관련된 협약서들 중 status + 누가 작성했는지로 필터
+    @EntityGraph(attributePaths = {"association", "association.council", "association.boss"})
+    Page<AssociationPaper> findByAssociation_Boss_User_UsernameAndAssociation_StatusAndRequester(
+            String username,
+            AssociationCondition status,
+            Role requester,
+            Pageable pageable
+    );
 
 
     @Query("""

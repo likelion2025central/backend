@@ -80,6 +80,21 @@ public class AssociationPaperController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false, "인증 메일 전송 중 오류가 발생했습니다. 다시 시도해주세요.", null));
     }
     }
+    @Operation(
+            summary = "사장님이 보낸/받은 제휴 협약서 정보들",
+            description = " 내가 사장님인데 받은거 보고싶다 -> requester는 COUNCIL / 보낸거 보고싶다 -> requester는 BOSS" +
+                    " {\"page\": 0} 이렇게 몇 페이지 볼건지만 보내면 됩니다"
+    )
+    @GetMapping("/boss/confirm-waiting")
+    public ResponseEntity<Page<AssociationPaperResponse>> getBossConfirmWaitingByRequester(
+            @AuthenticationPrincipal(expression = "username") String username,
+            @RequestParam(name = "requester") Role requester, // COUNCIL / BOSS
+            @PageableDefault(size = 2, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(
+                associationPaperService.getBossPapersConfirmWaitingByRequester(username, requester, pageable)
+        );
+    }
 
 
 }
